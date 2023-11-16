@@ -9,7 +9,7 @@ import { history } from "prosemirror-history";
 import { defaultMarkdownSerializer } from "prosemirror-markdown";
 import "prosemirror-menu/style/menu.css";
 import "prosemirror-view/style/prosemirror.css";
-import style from "./index.module.css";
+import "./editorStyles.css";
 import {
   buildInputRules,
   buildKeymap,
@@ -45,7 +45,7 @@ const Editor: FC<Props> = ({ schema, editorValue }) => {
       view.destroy();
     };
   }, [editorValue, schema]);
-  return <div ref={contentRef} className={style.editor}></div>;
+  return <div ref={contentRef} id="editor"></div>;
 };
 
 export default Editor;

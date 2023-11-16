@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Schema, Node as ProseMirrorNode } from "prosemirror-model";
@@ -6,7 +6,6 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import { menuBar } from "prosemirror-menu";
 import { history } from "prosemirror-history";
-import { defaultMarkdownSerializer } from "prosemirror-markdown";
 import "prosemirror-menu/style/menu.css";
 import "prosemirror-view/style/prosemirror.css";
 import "./editorStyles.css";
@@ -19,9 +18,10 @@ import {
 type Props = {
   schema: Schema;
   editorValue: object | null; //デフォルト内容
+  setEditorState: (state: EditorState) => void;
 };
 
-const Editor: FC<Props> = ({ schema, editorValue }) => {
+const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
   const contentRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const editorState = EditorState.create({
@@ -39,13 +39,18 @@ const Editor: FC<Props> = ({ schema, editorValue }) => {
     });
     const view = new EditorView(contentRef.current, {
       state: editorState,
+      dispatchTransaction(transaction) {
+        const newState = view.state.apply(transaction);
+        view.updateState(newState);
+        setEditorState(newState);
+      }
     });
     view.focus();
     return () => {
       view.destroy();
     };
-  }, [editorValue, schema]);
+  }, [editorValue, schema, setEditorState]);
   return <div ref={contentRef} id="editor"></div>;
 };
 
-export default Editor;
+export default React.memo(Editor);

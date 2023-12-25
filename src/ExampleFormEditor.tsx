@@ -12,7 +12,6 @@ const ExampleFormEditor = () => {
     e.preventDefault();
     if (editorState) {
       const content = defaultMarkdownSerializer.serialize(editorState.doc);
-      console.log(content);
     }
   };
 

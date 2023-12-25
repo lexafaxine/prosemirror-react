@@ -1,7 +1,13 @@
 import { EditorView } from "prosemirror-view";
-import { toggleMark, setBlockType } from "prosemirror-commands";
+import { toggleMark, setBlockType, wrapIn } from "prosemirror-commands";
 import { isActiveMark } from "./utils/isActiveMark";
-import React, { forwardRef, useState } from "react";
+import { isActiveHeading } from "./utils/IsActiveHeading";
+import { isActiveList } from "./utils/isActiveList";
+import React, { forwardRef } from "react";
+import {
+  liftListItem,
+  wrapInList,
+} from "prosemirror-schema-list";
 import { Schema } from "prosemirror-model";
 import styled from "styled-components";
 
@@ -36,36 +42,67 @@ type TooltipProps = {
 
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   ({ visible, top, left, editorView, schema, setVisible }, ref) => {
-    const [headingState, setHeadingState] = useState<number>(0); //0 for paragraph
-
     const toggleMarkdown = (markType: any) => {
       toggleMark(markType)(editorView.state, editorView.dispatch, editorView);
       editorView.focus();
       setVisible(false);
     };
     const toggleHeading = (level: number) => {
-      if (headingState !== level) {
+      if (isActiveHeading(editorView.state, schema.nodes.heading, level)) {
+        setParagraph();
+      } else {
         setBlockType(schema.nodes.heading, { level: level })(
           editorView.state,
           editorView.dispatch,
           editorView
         );
-        setHeadingState(level);
-      } else {
-        setParagraph();
-        setHeadingState(0);
       }
+
       setVisible(false);
     };
 
     const setParagraph = () => {
-      setVisible(false);
       setBlockType(schema.nodes.paragraph)(
         editorView.state,
         editorView.dispatch,
         editorView
       );
+      setVisible(false);
     };
+
+    const toggleBulletList = () => {
+      if (isActiveList(editorView.state, schema.nodes.bullet_list)) {
+        console.log("bingo");
+        liftListItem(schema.nodes.list_item)(
+          editorView.state,
+          editorView.dispatch
+        );
+      } else {
+        wrapInList(schema.nodes.bullet_list)(
+          editorView.state,
+          editorView.dispatch,
+          editorView
+        );
+      }
+      setVisible(false);
+    };
+
+    const toggleOrderedList = () => {
+      if (isActiveList(editorView.state, schema.nodes.ordered_list)) {
+        liftListItem(schema.nodes.list_item)(
+          editorView.state,
+          editorView.dispatch
+        );
+      } else {
+        wrapIn(schema.nodes.ordered_list)(
+          editorView.state,
+          editorView.dispatch,
+          editorView
+        );
+      }
+      setVisible(false);
+    };
+
     if (!visible) return null;
 
     return (
@@ -76,17 +113,23 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         >
           B
         </StyledButton>
-        <StyledButton
-          isActive={headingState === 1}
-          onClick={() => toggleHeading(1)}
-        >
+        <StyledButton isActive={false} onClick={() => toggleHeading(1)}>
           H1
         </StyledButton>
-        <StyledButton
-          isActive={headingState === 2}
-          onClick={() => toggleHeading(2)}
-        >
+        <StyledButton isActive={false} onClick={() => toggleHeading(2)}>
           H2
+        </StyledButton>
+        <StyledButton
+          isActive={isActiveList(editorView.state, schema.nodes.bullet_list)}
+          onClick={() => toggleBulletList()}
+        >
+          L1
+        </StyledButton>
+        <StyledButton
+          isActive={isActiveList(editorView.state, schema.nodes.ordered_list)}
+          onClick={() => toggleOrderedList()}
+        >
+          L2
         </StyledButton>
       </TooltipContainer>
     );

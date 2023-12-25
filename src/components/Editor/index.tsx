@@ -43,8 +43,6 @@ const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
       const end = viewRef.current?.coordsAtPos(to);
       if (start && end && contentRef.current) {
         const box = contentRef.current.getBoundingClientRect();
-        console.log(box);
-        console.log(start);
         const left = Math.max((start.left + end.left) / 2, start.left + 3);
         const top = end.bottom - box.top;
         setTooltipPosition({

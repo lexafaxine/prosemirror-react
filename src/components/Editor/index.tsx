@@ -9,10 +9,7 @@ import "prosemirror-menu/style/menu.css";
 import "prosemirror-view/style/prosemirror.css";
 import Tooltip from "../Tooltip";
 import "./editorStyles.css";
-import {
-  buildInputRules,
-  buildKeymap,
-} from "prosemirror-example-setup";
+import { buildInputRules, buildKeymap } from "prosemirror-example-setup";
 
 type Props = {
   schema: Schema;
@@ -20,13 +17,22 @@ type Props = {
   setEditorState: (state: EditorState) => void;
 };
 
+type TooltipPosition = {
+  top: number;
+  left: number;
+};
+
+const initialTooltipPosition = {
+  top: 0,
+  left: 0,
+};
+
 const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const [tooltip, setTooltip] = useState<{
-    visible: boolean;
-    top: number;
-    left: number;
-  }>({ visible: false, top: 0, left: 0 });
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(
+    initialTooltipPosition
+  );
+  const [visible, setVisible] = useState<boolean>(false);
   const viewRef = useRef<EditorView | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -41,14 +47,14 @@ const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
         console.log(start);
         const left = Math.max((start.left + end.left) / 2, start.left + 3);
         const top = end.bottom - box.top;
-        setTooltip({
-          visible: true,
+        setTooltipPosition({
           top: top,
           left: left,
         });
+        setVisible(true);
       }
     } else {
-      setTooltip((prev) => ({ ...prev, visible: false }));
+      setTooltipPosition((prev) => ({ ...prev, visible: false }));
     }
   }, []);
 
@@ -87,7 +93,7 @@ const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
           tooltipRef.current &&
           !tooltipRef.current.contains(event.target as Node)
         ) {
-          setTooltip((prev) => ({ ...prev, visible: false }));
+          setVisible(false);
         }
       };
 
@@ -107,10 +113,11 @@ const Editor: FC<Props> = ({ schema, editorValue, setEditorState }) => {
       {viewRef.current && (
         <Tooltip
           ref={tooltipRef}
-          visible={tooltip.visible}
-          top={tooltip.top}
-          left={tooltip.left}
+          visible={visible}
+          top={tooltipPosition.top}
+          left={tooltipPosition.left}
           editorView={viewRef.current}
+          setVisible = {setVisible}
           schema={schema}
         />
       )}

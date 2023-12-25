@@ -1,7 +1,7 @@
 import { EditorView } from "prosemirror-view";
-import { toggleMark } from "prosemirror-commands";
+import { toggleMark, setBlockType } from "prosemirror-commands";
 import { isActiveMark } from "./utils/isActiveMark";
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { Schema } from "prosemirror-model";
 import styled from "styled-components";
 
@@ -31,30 +31,62 @@ type TooltipProps = {
   left: number;
   editorView: EditorView;
   schema: Schema;
+  setVisible: (visible: boolean) => void;
 };
 
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
-  ({ visible, top, left, editorView, schema }, ref) => {
-    const toggle = (markType: any) => {
+  ({ visible, top, left, editorView, schema, setVisible }, ref) => {
+    const [headingState, setHeadingState] = useState<number>(0); //0 for paragraph
+
+    const toggleMarkdown = (markType: any) => {
       toggleMark(markType)(editorView.state, editorView.dispatch, editorView);
       editorView.focus();
+      setVisible(false);
+    };
+    const toggleHeading = (level: number) => {
+      if (headingState !== level) {
+        setBlockType(schema.nodes.heading, { level: level })(
+          editorView.state,
+          editorView.dispatch,
+          editorView
+        );
+        setHeadingState(level);
+      } else {
+        setParagraph();
+        setHeadingState(0);
+      }
+      setVisible(false);
     };
 
+    const setParagraph = () => {
+      setVisible(false);
+      setBlockType(schema.nodes.paragraph)(
+        editorView.state,
+        editorView.dispatch,
+        editorView
+      );
+    };
     if (!visible) return null;
 
     return (
       <TooltipContainer ref={ref} top={top} left={left}>
         <StyledButton
           isActive={isActiveMark(editorView.state, schema.marks.strong)}
-          onClick={() => toggle(schema.marks.strong)}
+          onClick={() => toggleMarkdown(schema.marks.strong)}
         >
           B
         </StyledButton>
         <StyledButton
-          isActive={isActiveMark(editorView.state, schema.marks.em)}
-          onClick={() => toggle(schema.marks.em)}
+          isActive={headingState === 1}
+          onClick={() => toggleHeading(1)}
         >
-          I
+          H1
+        </StyledButton>
+        <StyledButton
+          isActive={headingState === 2}
+          onClick={() => toggleHeading(2)}
+        >
+          H2
         </StyledButton>
       </TooltipContainer>
     );

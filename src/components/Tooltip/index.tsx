@@ -1,14 +1,19 @@
+import { EditorView } from "prosemirror-view";
+import { toggleMark } from "prosemirror-commands";
+import { isActiveMark } from "./utils/isActiveMark";
 import React, { forwardRef } from "react";
+import { Schema } from "prosemirror-model";
 
 type TooltipProps = {
   visible: boolean;
-  text: string;
   top: number;
   left: number;
+  editorView: EditorView;
+  schema: Schema;
 };
 
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
-  ({ visible, text, top, left }, ref) => {
+  ({ visible, top, left, editorView, schema }, ref) => {
     if (!visible) return null;
 
     return (
@@ -23,20 +28,42 @@ const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
         }}
       >
         <button
-          onClick={() => {
-            console.log("click button 1");
+          style={{
+            fontWeight: isActiveMark(
+              editorView.state,
+              schema.marks.strong
+            )
+              ? "bold"
+              : undefined,
           }}
-          type="button"
+          onClick={() => {
+            toggleMark(schema.marks.strong)(
+              editorView.state,
+              editorView.dispatch,
+              editorView
+            );
+            editorView.focus();
+          }}
         >
-          button 1
+          B
         </button>
         <button
-          onClick={() => {
-            console.log("click button 2");
-          }}
-         type="button">
-          button 2
-        </button>
+        style={{
+          fontWeight: isActiveMark(editorView.state, schema.marks.em)
+            ? "bold"
+            : undefined
+        }}
+        onClick={() => {
+          toggleMark(schema.marks.em)(
+            editorView.state,
+            editorView.dispatch,
+            editorView
+          );
+          editorView.focus();
+        }}
+      >
+        I
+      </button>
       </div>
     );
   }

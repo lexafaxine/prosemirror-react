@@ -1,1 +1,1 @@
-export { schema as exampleSchema } from "prosemirror-markdown";
+export {schema as exampleSchema} from "prosemirror-schema-basic"

@@ -3,6 +3,27 @@ import { toggleMark } from "prosemirror-commands";
 import { isActiveMark } from "./utils/isActiveMark";
 import React, { forwardRef } from "react";
 import { Schema } from "prosemirror-model";
+import styled from "styled-components";
+
+type TooltipContainerProps = {
+  top: number;
+  left: number;
+};
+
+const TooltipContainer = styled.div<TooltipContainerProps>`
+  position: absolute;
+  top: ${(props) => props.top}px;
+  left: ${(props) => props.left}px;
+  z-index: 100;
+`;
+
+type StyledButtonProps = {
+  isActive: boolean;
+};
+
+const StyledButton = styled.button<StyledButtonProps>`
+  font-weight: ${(props) => (props.isActive ? "bold" : "normal")};
+`;
 
 type TooltipProps = {
   visible: boolean;
@@ -14,58 +35,30 @@ type TooltipProps = {
 
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   ({ visible, top, left, editorView, schema }, ref) => {
+    const toggle = (markType: any) => {
+      toggleMark(markType)(editorView.state, editorView.dispatch, editorView);
+      editorView.focus();
+    };
+
     if (!visible) return null;
 
     return (
-      <div
-        ref={ref}
-        className="tooltip"
-        style={{
-          top: `${top}px`,
-          left: `${left}px`,
-          position: "absolute",
-          zIndex: "100",
-        }}
-      >
-        <button
-          style={{
-            fontWeight: isActiveMark(
-              editorView.state,
-              schema.marks.strong
-            )
-              ? "bold"
-              : undefined,
-          }}
-          onClick={() => {
-            toggleMark(schema.marks.strong)(
-              editorView.state,
-              editorView.dispatch,
-              editorView
-            );
-            editorView.focus();
-          }}
+      <TooltipContainer ref={ref} top={top} left={left}>
+        <StyledButton
+          isActive={isActiveMark(editorView.state, schema.marks.strong)}
+          onClick={() => toggle(schema.marks.strong)}
         >
           B
-        </button>
-        <button
-        style={{
-          fontWeight: isActiveMark(editorView.state, schema.marks.em)
-            ? "bold"
-            : undefined
-        }}
-        onClick={() => {
-          toggleMark(schema.marks.em)(
-            editorView.state,
-            editorView.dispatch,
-            editorView
-          );
-          editorView.focus();
-        }}
-      >
-        I
-      </button>
-      </div>
+        </StyledButton>
+        <StyledButton
+          isActive={isActiveMark(editorView.state, schema.marks.em)}
+          onClick={() => toggle(schema.marks.em)}
+        >
+          I
+        </StyledButton>
+      </TooltipContainer>
     );
   }
 );
+
 export default Tooltip;

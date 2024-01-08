@@ -10,6 +10,7 @@ import {
 } from "prosemirror-schema-list";
 import { Schema } from "prosemirror-model";
 import styled from "styled-components";
+import { MarkType } from 'prosemirror-model';
 
 type TooltipContainerProps = {
   top: number;
@@ -42,7 +43,7 @@ type TooltipProps = {
 
 const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
   ({ visible, top, left, editorView, schema, setVisible }, ref) => {
-    const toggleMarkdown = (markType: any) => {
+    const toggleMarkdown = (markType: MarkType) => {
       toggleMark(markType)(editorView.state, editorView.dispatch, editorView);
       editorView.focus();
       setVisible(false);

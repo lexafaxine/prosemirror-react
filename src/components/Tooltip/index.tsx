@@ -1,7 +1,7 @@
 import { EditorView } from "prosemirror-view";
 import { toggleMark, setBlockType, wrapIn } from "prosemirror-commands";
 import { isActiveMark } from "./utils/isActiveMark";
-import { isActiveHeading } from "./utils/IsActiveHeading";
+import { isActiveHeading } from "./utils/isActiveHeading";
 import { isActiveList } from "./utils/isActiveList";
 import React, { forwardRef } from "react";
 import {

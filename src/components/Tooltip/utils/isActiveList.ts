@@ -10,8 +10,5 @@ export const isActiveList = (state: EditorState, listType: NodeType) => {
       isActive = true;
     }
   });
-
-  console.log(isActive)
-
   return isActive;
 };
